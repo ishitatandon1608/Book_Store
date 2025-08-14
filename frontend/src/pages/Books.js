@@ -37,7 +37,7 @@ const Books = () => {
   const [imagePreview, setImagePreview] = useState(null);
 
   // Fetch data
-  const { data: booksData, isLoading: booksLoading } = useQuery('books', () => booksAPI.getAll({ limit: 1000 }));
+  const { data: booksData, isLoading: booksLoading } = useQuery('booksPage', () => booksAPI.getAll({ limit: 1000 }));
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery('categoriesForBooks', () => categoriesAPI.getAll({ limit: 1000 }));
 
   const books = booksData?.data?.books || [];
@@ -55,7 +55,7 @@ const Books = () => {
   // Mutations
   const createBookMutation = useMutation(booksAPI.create, {
     onSuccess: () => {
-      queryClient.invalidateQueries('books');
+      queryClient.invalidateQueries('booksPage');
       toast.success('Book added successfully!');
       handleCloseModals();
     },
@@ -66,7 +66,7 @@ const Books = () => {
 
   const updateBookMutation = useMutation(booksAPI.update, {
     onSuccess: () => {
-      queryClient.invalidateQueries('books');
+      queryClient.invalidateQueries('booksPage');
       toast.success('Book updated successfully!');
       handleCloseModals();
     },
@@ -77,7 +77,7 @@ const Books = () => {
 
   const deleteBookMutation = useMutation(booksAPI.delete, {
     onSuccess: () => {
-      queryClient.invalidateQueries('books');
+      queryClient.invalidateQueries('booksPage');
       toast.success('Book deleted successfully!');
       handleCloseModals();
     },
@@ -88,7 +88,7 @@ const Books = () => {
 
   const updateStockMutation = useMutation(booksAPI.updateStock, {
     onSuccess: () => {
-      queryClient.invalidateQueries('books');
+      queryClient.invalidateQueries('booksPage');
       toast.success('Stock updated successfully!');
       handleCloseModals();
     },
