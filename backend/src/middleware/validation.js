@@ -47,8 +47,8 @@ const validateBook = [
     .withMessage('Author is required and must be less than 255 characters'),
   body('isbn')
     .trim()
-    .isLength({ min: 10, max: 13 })
-    .withMessage('ISBN must be between 10 and 13 characters'),
+    .isLength({ min: 8, max: 13 })
+    .withMessage('ISBN must be between 8 and 13 characters'),
   body('price')
     .isFloat({ min: 0 })
     .withMessage('Price must be a positive number'),
