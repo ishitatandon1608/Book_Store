@@ -4,6 +4,7 @@ const logger = require('../config/logger');
 const createBook = async (req, res) => {
   try {
     console.log('createBook received data:', req.body);
+    console.log('Image URL length:', req.body.image_url ? req.body.image_url.length : 'No image');
 
     const bookData = req.body;
     const book = await Book.create(bookData);

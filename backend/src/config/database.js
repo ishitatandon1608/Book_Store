@@ -165,9 +165,6 @@ const executeQueryWithRows = async (query, params = []) => {
   try {
     connection = await createConnection();
 
-    console.log('executeQueryWithRows - Query:', query);
-    console.log('executeQueryWithRows - Params:', params);
-
     // Use query instead of execute for better compatibility with LIMIT/OFFSET
     const [rows] = await connection.query(query, params);
     return rows;

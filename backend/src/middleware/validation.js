@@ -60,6 +60,16 @@ const validateBook = [
     .withMessage('Category is required')
     .isInt({ min: 1 })
     .withMessage('Please select a valid category'),
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Description must be less than 1000 characters'),
+  body('image_url')
+    .optional()
+    .trim()
+    .isLength({ max: 10000 })
+    .withMessage('Image URL must be less than 10000 characters'),
   handleValidationErrors
 ];
 

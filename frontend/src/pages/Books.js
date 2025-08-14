@@ -106,16 +106,60 @@ const Books = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
+  const compressImage = (base64String, maxWidth = 800) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Calculate new dimensions
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(compressedBase64);
+      };
+      img.src = base64String;
+    });
+  };
+
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData(prev => ({
-          ...prev,
-          image_url: reader.result
-        }));
+      reader.onloadend = async () => {
+        try {
+          // Compress the image
+          const compressedImage = await compressImage(reader.result);
+          setImagePreview(compressedImage);
+          setFormData(prev => ({
+            ...prev,
+            image_url: compressedImage
+          }));
+        } catch (error) {
+          console.error('Image compression error:', error);
+          // Fallback to original image
+          setImagePreview(reader.result);
+          setFormData(prev => ({
+            ...prev,
+            image_url: reader.result
+          }));
+        }
       };
       reader.readAsDataURL(file);
     }
