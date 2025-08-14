@@ -38,7 +38,7 @@ const Books = () => {
 
   // Fetch data
   const { data: booksData, isLoading: booksLoading } = useQuery('books', () => booksAPI.getAll({ limit: 1000 }));
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery('categories', () => categoriesAPI.getAll({ limit: 1000 }));
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery('categoriesForBooks', () => categoriesAPI.getAll({ limit: 1000 }));
 
   const books = booksData?.data?.books || [];
   const categories = categoriesData?.data?.categories || [];

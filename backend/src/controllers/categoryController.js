@@ -26,18 +26,13 @@ const getAllCategories = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '' } = req.query;
 
-    console.log('getAllCategories called with:', { page, limit, search });
-
     const result = await Category.getAll(page, limit, search);
-
-    console.log('getAllCategories result:', result);
 
     res.json({
       success: true,
       data: result
     });
   } catch (error) {
-    console.error('getAllCategories error:', error);
     logger.error('Get all categories error', { error: error.message });
     res.status(500).json({
       success: false,
