@@ -115,26 +115,32 @@ const Books = () => {
     }));
   };
 
-  const compressImage = (base64String, maxWidth = 800) => {
+  const compressImage = (base64String, maxWidth = 400) => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        // Calculate new dimensions
+        // Calculate new dimensions - more aggressive compression
         let { width, height } = img;
         if (width > maxWidth) {
           height = (height * maxWidth) / width;
           width = maxWidth;
         }
 
+        // Limit maximum height too
+        if (height > 400) {
+          width = (width * 400) / height;
+          height = 400;
+        }
+
         canvas.width = width;
         canvas.height = height;
 
-        // Draw and compress
+        // Draw and compress with lower quality
         ctx.drawImage(img, 0, 0, width, height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5); // Reduced quality to 50%
         resolve(compressedBase64);
       };
       img.src = base64String;
@@ -155,6 +161,13 @@ const Books = () => {
         try {
           // Compress the image
           const compressedImage = await compressImage(reader.result);
+
+          // Check if compressed image is still too large (limit to 500KB base64)
+          if (compressedImage.length > 500000) {
+            toast.error('Image is still too large after compression. Please try a smaller image.');
+            return;
+          }
+
           setImagePreview(compressedImage);
           setFormData(prev => ({
             ...prev,

@@ -68,8 +68,8 @@ const validateBook = [
   body('image_url')
     .optional()
     .trim()
-    .isLength({ max: 10000 })
-    .withMessage('Image URL must be less than 10000 characters'),
+    .isLength({ max: 100000 })
+    .withMessage('Image URL must be less than 100,000 characters'),
   handleValidationErrors
 ];
 

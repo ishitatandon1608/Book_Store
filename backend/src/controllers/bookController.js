@@ -4,6 +4,13 @@ const logger = require('../config/logger');
 const createBook = async (req, res) => {
   try {
     const bookData = req.body;
+
+    // Debug image URL length
+    if (bookData.image_url) {
+      console.log('Image URL length:', bookData.image_url.length);
+      console.log('Image URL starts with:', bookData.image_url.substring(0, 50) + '...');
+    }
+
     const book = await Book.create(bookData);
 
     logger.info('Book created', { bookId: book.id, title: book.title, userId: req.user.id });
@@ -70,6 +77,12 @@ const updateBook = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
+
+    // Debug image URL length
+    if (updateData.image_url) {
+      console.log('Update - Image URL length:', updateData.image_url.length);
+      console.log('Update - Image URL starts with:', updateData.image_url.substring(0, 50) + '...');
+    }
 
     const book = await Book.update(id, updateData);
 
