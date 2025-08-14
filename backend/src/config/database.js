@@ -145,7 +145,22 @@ const executeQuery = async (query, params = []) => {
   let connection;
   try {
     connection = await createConnection();
-    const [results] = await connection.execute(query, params);
+
+    // Ensure parameters are properly formatted
+    const formattedParams = params.map(param => {
+      if (param === null || param === undefined) {
+        return null;
+      }
+      if (typeof param === 'number') {
+        return param;
+      }
+      if (typeof param === 'string') {
+        return param;
+      }
+      return param;
+    });
+
+    const [results] = await connection.execute(query, formattedParams);
     return results;
   } catch (error) {
     logger.error('Database query error:', { error: error.message, query });
@@ -162,7 +177,26 @@ const executeQueryWithRows = async (query, params = []) => {
   let connection;
   try {
     connection = await createConnection();
-    const [rows] = await connection.execute(query, params);
+
+    // Ensure parameters are properly formatted
+    const formattedParams = params.map(param => {
+      if (param === null || param === undefined) {
+        return null;
+      }
+      if (typeof param === 'number') {
+        return param;
+      }
+      if (typeof param === 'string') {
+        return param;
+      }
+      return param;
+    });
+
+    console.log('executeQueryWithRows - Query:', query);
+    console.log('executeQueryWithRows - Original params:', params);
+    console.log('executeQueryWithRows - Formatted params:', formattedParams);
+
+    const [rows] = await connection.execute(query, formattedParams);
     return rows;
   } catch (error) {
     logger.error('Database query error:', { error: error.message, query });
