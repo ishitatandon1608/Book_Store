@@ -88,10 +88,14 @@ class Book {
 
   static async getAll(page = 1, limit = 10, search = '', category_id = null) {
     try {
+      console.log('Book.getAll received params:', { page, limit, search, category_id, pageType: typeof page, limitType: typeof limit });
+
       // Handle undefined/null parameters
       const pageNum = page ? parseInt(page) || 1 : 1;
       const limitNum = limit ? parseInt(limit) || 10 : 10;
       const offset = (pageNum - 1) * limitNum;
+
+      console.log('Book.getAll processed params:', { pageNum, limitNum, offset, pageNumType: typeof pageNum, limitNumType: typeof limitNum, offsetType: typeof offset });
 
       let query = `
         SELECT b.*, c.name as category_name 
@@ -124,6 +128,8 @@ class Book {
 
       query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
       params.push(limitNum, offset);
+
+      console.log('Book.getAll final query params:', { query, params, limitNum, offset });
 
       const rows = await executeQueryWithRows(query, params);
       const countResult = await executeQueryWithRows(countQuery, countParams);

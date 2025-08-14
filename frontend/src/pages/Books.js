@@ -37,8 +37,8 @@ const Books = () => {
   const [imagePreview, setImagePreview] = useState(null);
 
   // Fetch data
-  const { data: booksData, isLoading: booksLoading } = useQuery('booksPage', () => booksAPI.getAll({ limit: 1000 }));
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery('categoriesForBooks', () => categoriesAPI.getAll({ limit: 1000 }));
+  const { data: booksData, isLoading: booksLoading } = useQuery('booksPage', () => booksAPI.getAll({ limit: 50 }));
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery('categoriesForBooks', () => categoriesAPI.getAll({ limit: 50 }));
 
   const books = booksData?.data?.books || [];
   const categories = categoriesData?.data?.categories || [];
