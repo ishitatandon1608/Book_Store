@@ -53,6 +53,8 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
   try {
+    console.log('Registration request received:', req.body);
+
     const { name, email, password, phone, role } = req.body;
 
     // Check if user already exists
@@ -63,6 +65,8 @@ const register = async (req, res) => {
         message: 'User with this email already exists'
       });
     }
+
+    console.log('Creating user with data:', { name, email, phone, role });
 
     // Create new user
     const user = await User.create({
@@ -87,6 +91,7 @@ const register = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Registration error:', error.message);
     logger.error('Registration error', { error: error.message });
     res.status(500).json({
       success: false,

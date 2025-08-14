@@ -92,8 +92,9 @@ const validateUser = [
     .withMessage('Name is required and must be less than 100 characters'),
   body('phone')
     .optional()
-    .matches(/^[\+]?[1-9][\d]{0,15}$/)
-    .withMessage('Please enter a valid phone number'),
+    .trim()
+    .isLength({ min: 10, max: 15 })
+    .withMessage('Phone number must be between 10 and 15 characters'),
   handleValidationErrors
 ];
 

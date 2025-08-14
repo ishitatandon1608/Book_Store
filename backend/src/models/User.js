@@ -26,14 +26,18 @@ class User {
 
   static async create(userData) {
     try {
-      const { name, email, password, role = 'user' } = userData;
+      const { name, email, password, role = 'user', phone } = userData;
+
+      // Hash the password
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       const query = `
-        INSERT INTO users (name, email, password, role, created_at, updated_at)
-        VALUES (?, ?, ?, ?, NOW(), NOW())
+        INSERT INTO users (name, email, password, phone, role, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, NOW(), NOW())
       `;
 
-      const result = await executeQuery(query, [name, email, password, role]);
+      const result = await executeQuery(query, [name, email, hashedPassword, phone, role]);
 
       logger.info('User created successfully', { userId: result.insertId, email });
 

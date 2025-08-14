@@ -183,7 +183,12 @@
           resultDiv.innerHTML = `
                         <h3>❌ Error Creating Admin User</h3>
                         <p><strong>Error:</strong> ${data.message}</p>
-                        ${data.errors ? `<p><strong>Details:</strong> ${JSON.stringify(data.errors)}</p>` : ''}
+                        ${data.errors ? `
+                            <p><strong>Validation Errors:</strong></p>
+                            <ul>
+                                ${data.errors.map(error => `<li>${error.field}: ${error.message}</li>`).join('')}
+                            </ul>
+                        ` : ''}
                     `;
         }
 
