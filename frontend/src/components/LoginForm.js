@@ -2,14 +2,13 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, Mail, Lock, Eye, EyeOff, Sparkles, UserPlus } from 'lucide-react';
+import { BookOpen, Mail, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 const LoginForm = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [showRegisterModal, setShowRegisterModal] = React.useState(false);
 
   const {
     register,
@@ -30,10 +29,6 @@ const LoginForm = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const openRegisterForm = () => {
-    window.open('/create-admin-form.html', '_blank', 'width=600,height=700');
   };
 
   return (
@@ -188,18 +183,6 @@ const LoginForm = () => {
                     </div>
                   </div>
                 )}
-              </button>
-            </div>
-
-            {/* Register New User Link */}
-            <div className="text-center pt-2">
-              <button
-                type="button"
-                onClick={openRegisterForm}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Register New Admin User
               </button>
             </div>
 
