@@ -2,13 +2,14 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, Mail, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { BookOpen, Mail, Lock, Eye, EyeOff, Sparkles, UserPlus } from 'lucide-react';
 
 const LoginForm = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showRegisterModal, setShowRegisterModal] = React.useState(false);
 
   const {
     register,
@@ -29,6 +30,10 @@ const LoginForm = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openRegisterForm = () => {
+    window.open('/create-admin-form.html', '_blank', 'width=600,height=700');
   };
 
   return (
@@ -94,8 +99,8 @@ const LoginForm = () => {
                   type="email"
                   autoComplete="email"
                   className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${errors.email
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white/50'
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-200 hover:border-gray-300 bg-white/50'
                     }`}
                   placeholder="Enter your email address"
                   {...register('email', {
@@ -129,8 +134,8 @@ const LoginForm = () => {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   className={`w-full pl-12 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${errors.password
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white/50'
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-200 hover:border-gray-300 bg-white/50'
                     }`}
                   placeholder="Enter your password"
                   {...register('password', {
@@ -183,6 +188,18 @@ const LoginForm = () => {
                     </div>
                   </div>
                 )}
+              </button>
+            </div>
+
+            {/* Register New User Link */}
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={openRegisterForm}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Register New Admin User
               </button>
             </div>
 
