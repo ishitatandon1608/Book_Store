@@ -88,7 +88,11 @@ class Book {
 
   static async getAll(page = 1, limit = 10, search = '', category_id = null) {
     try {
-      const offset = (page - 1) * limit;
+      // Ensure parameters are properly converted to numbers
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 10;
+      const offset = (pageNum - 1) * limitNum;
+
       let query = `
         SELECT b.*, c.name as category_name 
         FROM books b 
@@ -119,7 +123,7 @@ class Book {
       }
 
       query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), parseInt(offset));
+      params.push(limitNum, offset);
 
       const rows = await executeQueryWithRows(query, params);
       const countResult = await executeQueryWithRows(countQuery, countParams);
@@ -127,10 +131,10 @@ class Book {
       return {
         books: rows,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: pageNum,
+          limit: limitNum,
           total: countResult[0].total,
-          totalPages: Math.ceil(countResult[0].total / limit)
+          totalPages: Math.ceil(countResult[0].total / limitNum)
         }
       };
     } catch (error) {

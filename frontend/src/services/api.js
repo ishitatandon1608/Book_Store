@@ -86,7 +86,7 @@ export const authAPI = {
 
 // Books API
 export const booksAPI = {
-  getAll: (params) => api.get('/books', { params }),
+  getAll: (params = {}) => api.get('/books', { params }),
   getById: (id) => api.get(`/books/${id}`),
   create: (bookData) => api.post('/books', bookData),
   update: (id, bookData) => api.put(`/books/${id}`, bookData),
@@ -98,7 +98,7 @@ export const booksAPI = {
 
 // Categories API
 export const categoriesAPI = {
-  getAll: (params) => api.get('/categories', { params }),
+  getAll: (params = {}) => api.get('/categories', { params }),
   getSimple: () => api.get('/categories/simple'),
   getWithCount: () => api.get('/categories/with-book-count'),
   getById: (id) => api.get(`/categories/${id}`),
