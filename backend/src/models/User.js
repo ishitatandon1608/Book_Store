@@ -1,11 +1,11 @@
-const { pool } = require('../config/database');
+const { executeQuery, executeQueryWithRows } = require('../config/database');
 const logger = require('../config/logger');
 
 class User {
   static async findByEmail(email) {
     try {
       const query = 'SELECT * FROM users WHERE email = ?';
-      const [rows] = await pool.execute(query, [email]);
+      const rows = await executeQueryWithRows(query, [email]);
       return rows[0] || null;
     } catch (error) {
       logger.error('Error finding user by email', { error: error.message, email });
@@ -16,7 +16,7 @@ class User {
   static async findById(id) {
     try {
       const query = 'SELECT * FROM users WHERE id = ?';
-      const [rows] = await pool.execute(query, [id]);
+      const rows = await executeQueryWithRows(query, [id]);
       return rows[0] || null;
     } catch (error) {
       logger.error('Error finding user by ID', { error: error.message, id });
@@ -33,7 +33,7 @@ class User {
         VALUES (?, ?, ?, ?, NOW(), NOW())
       `;
 
-      const [result] = await pool.execute(query, [name, email, password, role]);
+      const result = await executeQuery(query, [name, email, password, role]);
 
       logger.info('User created successfully', { userId: result.insertId, email });
 
@@ -54,7 +54,7 @@ class User {
         WHERE id = ?
       `;
 
-      const [result] = await pool.execute(query, [name, email, role, id]);
+      const result = await executeQuery(query, [name, email, role, id]);
 
       if (result.affectedRows === 0) {
         throw new Error('User not found');
@@ -72,7 +72,7 @@ class User {
   static async delete(id) {
     try {
       const query = 'DELETE FROM users WHERE id = ?';
-      const [result] = await pool.execute(query, [id]);
+      const result = await executeQuery(query, [id]);
 
       if (result.affectedRows === 0) {
         throw new Error('User not found');
@@ -96,10 +96,10 @@ class User {
         ORDER BY created_at DESC 
         LIMIT ? OFFSET ?
       `;
-      const [rows] = await pool.execute(query, [limit, offset]);
+      const rows = await executeQueryWithRows(query, [limit, offset]);
 
       // Get total count
-      const [countResult] = await pool.execute('SELECT COUNT(*) as total FROM users');
+      const countResult = await executeQueryWithRows('SELECT COUNT(*) as total FROM users');
 
       return {
         users: rows,

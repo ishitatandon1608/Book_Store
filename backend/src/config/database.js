@@ -1,46 +1,62 @@
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 const logger = require('./logger');
 
+// Simple database configuration without pooling
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'bookstore_admin',
-  port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  acquireTimeout: 60000,
-  timeout: 60000,
-  reconnect: true
+  database: process.env.DB_NAME || 'bookstore_db',
+  port: parseInt(process.env.DB_PORT) || 3306,
+  // Remove all pooling options for simple connections
 };
 
-let pool = null;
+// Create a simple connection function
+const createConnection = async () => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    return connection;
+  } catch (error) {
+    console.error('❌ Failed to create database connection:', error.message);
+    console.error('Please check your MySQL Workbench credentials in .env file');
+    throw error;
+  }
+};
 
 // Test database connection
 const testConnection = async () => {
   try {
-    if (!pool) {
-      pool = mysql.createPool(dbConfig);
-    }
-    const connection = await pool.getConnection();
+    const connection = await createConnection();
     console.log('✅ Database connected successfully');
-    connection.release();
+    console.log(`📊 Connected to database: ${dbConfig.database}`);
 
     // Initialize database tables if they don't exist
-    await initializeDatabase();
+    await initializeDatabase(connection);
+
+    await connection.end();
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
     console.error('Please check your database credentials in .env file');
+    console.error('Current config:', {
+      host: dbConfig.host,
+      user: dbConfig.user,
+      database: dbConfig.database,
+      port: dbConfig.port,
+      hasPassword: !!dbConfig.password
+    });
+    console.error('Common solutions:');
+    console.error('1. Make sure MySQL is running in MySQL Workbench');
+    console.error('2. Check your username and password in .env file');
+    console.error('3. Run setup-mysql-workbench.sql in MySQL Workbench');
+    console.error('4. Verify database name matches in .env file');
     process.exit(1);
   }
 };
 
 // Initialize database tables
-const initializeDatabase = async () => {
+const initializeDatabase = async (connection) => {
   try {
-    const connection = await pool.getConnection();
-
     // Create users table
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS users (
@@ -108,12 +124,15 @@ const initializeDatabase = async () => {
       await connection.execute(`
         INSERT INTO categories (name, description) VALUES 
         ('Fiction', 'Fictional literature including novels and short stories'),
-        ('Non-Fiction', 'Non-fictional books including biographies, history, and science')
+        ('Non-Fiction', 'Non-fictional books including biographies, history, and science'),
+        ('Science Fiction', 'Science fiction and fantasy books'),
+        ('Mystery', 'Mystery and thriller books'),
+        ('Romance', 'Romance novels'),
+        ('Biography', 'Biographies and autobiographies')
       `);
       console.log('✅ Default categories created');
     }
 
-    connection.release();
     console.log('✅ Database tables initialized successfully');
   } catch (error) {
     console.error('❌ Error initializing database:', error.message);
@@ -121,8 +140,44 @@ const initializeDatabase = async () => {
   }
 };
 
+// Execute query with automatic connection management
+const executeQuery = async (query, params = []) => {
+  let connection;
+  try {
+    connection = await createConnection();
+    const [results] = await connection.execute(query, params);
+    return results;
+  } catch (error) {
+    logger.error('Database query error:', { error: error.message, query });
+    throw error;
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
+
+// Execute query that returns rows
+const executeQueryWithRows = async (query, params = []) => {
+  let connection;
+  try {
+    connection = await createConnection();
+    const [rows] = await connection.execute(query, params);
+    return rows;
+  } catch (error) {
+    logger.error('Database query error:', { error: error.message, query });
+    throw error;
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+};
+
 module.exports = {
-  pool,
+  createConnection,
+  executeQuery,
+  executeQueryWithRows,
   testConnection,
   isMockMode: () => false
 }; 

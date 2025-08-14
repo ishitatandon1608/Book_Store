@@ -14,115 +14,83 @@ A modern, full-stack web application for managing bookstore inventory with a bea
 - **📈 Stock Management** - Track inventory levels
 - **🖼️ Image Upload** - Add book cover images
 
-## 🚀 Quick Start
+## 🚀 Quick Start (MySQL Workbench)
 
 ### Prerequisites
 
 - **Node.js** (v16 or higher)
-- **MySQL** (v8.0 or higher)
+- **MySQL Workbench** (with MySQL server running)
 - **npm** or **yarn**
 
-### 1. Clone the Repository
+### 1. Database Setup
 
-```bash
-git clone <repository-url>
-cd bookstore-admin
+1. **Open MySQL Workbench**
+2. **Connect to your MySQL server**
+3. **Run the setup script:**
+   - Open `setup-mysql-workbench.sql` in MySQL Workbench
+   - Click the lightning bolt icon to execute the script
+   - This creates the database and all tables
+
+### 2. Configure Environment
+
+Edit `backend/.env` file with your MySQL credentials:
+
+```env
+# Database Configuration - Update these with your MySQL Workbench credentials
+DB_HOST=localhost
+DB_USER=root                    # Your MySQL username
+DB_PASSWORD=your_password       # Your MySQL password
+DB_NAME=bookstore_db           # Database name
+DB_PORT=3306                   # Default MySQL port
 ```
 
-### 2. Install Dependencies
+### 3. Install Dependencies
 
 ```bash
-# Install root dependencies
-npm install
-
-# Install frontend dependencies
-cd frontend
-npm install
-
-# Install backend dependencies
-cd ../backend
-npm install
+# Install all dependencies
+npm run install:all
 ```
 
-### 3. Database Setup
+### 4. Test Connection (Optional)
 
-1. **Create MySQL Database:**
-   ```sql
-   CREATE DATABASE bookstore_admin;
-   ```
-
-2. **Configure Database Connection:**
-   ```bash
-   cd backend
-   cp .env.example .env
-   ```
-
-3. **Edit `.env` file with your database credentials:**
-   ```env
-   # Database Configuration
-   DB_HOST=localhost
-   DB_USER=your_username
-   DB_PASSWORD=your_password
-   DB_NAME=bookstore_admin
-   DB_PORT=3306
-   
-   # JWT Configuration
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   ```
-
-### 4. Start the Application
-
-#### Option A: Start Both Services (Recommended)
 ```bash
-# From root directory
+# Test your database connection
+node test-connection.js
+```
+
+### 5. Start the Application
+
+```bash
+# Start both frontend and backend
 npm run dev
 ```
 
-#### Option B: Start Services Separately
-```bash
-# Terminal 1 - Start Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Start Frontend
-cd frontend
-npm start
-```
-
-### 5. Access the Application
+### 6. Access the Application
 
 - **Frontend:** http://localhost:3000
 - **Backend API:** http://localhost:5000
+- **Login:** admin@bookstore.com / admin123
 
-### 6. Login Credentials
+## ✅ What You Can Do
 
-The system will automatically create an admin user on first run:
-- **Email:** admin@bookstore.com
-- **Password:** admin123
+After setup, you'll be able to:
+- ✅ Login to the admin panel
+- ✅ Add new categories
+- ✅ Add new books
+- ✅ Edit existing books and categories
+- ✅ Delete books and categories
+- ✅ View all data in a beautiful interface
 
 ## 📁 Project Structure
 
 ```
 bookstore-admin/
 ├── frontend/                 # React frontend
-│   ├── src/
-│   │   ├── components/      # Reusable components
-│   │   ├── contexts/        # React contexts
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API services
-│   │   └── index.css       # Global styles
-│   └── package.json
 ├── backend/                  # Node.js backend
-│   ├── src/
-│   │   ├── config/         # Configuration files
-│   │   ├── controllers/    # Route controllers
-│   │   ├── middleware/     # Express middleware
-│   │   ├── models/         # Database models
-│   │   ├── routes/         # API routes
-│   │   └── server.js       # Main server file
-│   ├── .env               # Environment variables
-│   └── package.json
-└── package.json            # Root package.json
+├── setup-mysql-workbench.sql # Database setup script
+├── test-connection.js        # Connection test script
+├── MYSQL_WORKBENCH_SETUP.md  # Detailed setup guide
+└── package.json             # Root package.json
 ```
 
 ## 🔧 Configuration
@@ -135,11 +103,11 @@ bookstore-admin/
 PORT=5000
 NODE_ENV=development
 
-# Database
+# Database (Update with your MySQL Workbench credentials)
 DB_HOST=localhost
-DB_USER=your_username
+DB_USER=root
 DB_PASSWORD=your_password
-DB_NAME=bookstore_admin
+DB_NAME=bookstore_db
 DB_PORT=3306
 
 # JWT
@@ -156,13 +124,78 @@ LOG_LEVEL=info
 LOG_FILE_PATH=logs/app.log
 ```
 
-#### Frontend
-- **Proxy:** Configured to `http://localhost:5000` in package.json
-- **API Base URL:** Automatically uses the proxy
+## 🛠️ Available Scripts
+
+### Root Directory
+```bash
+npm run dev              # Start both frontend and backend
+npm run dev:frontend     # Start only frontend
+npm run dev:backend      # Start only backend
+npm run install:all      # Install all dependencies
+```
+
+### Testing
+```bash
+node test-connection.js  # Test database connection
+```
+
+## 🔌 API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/profile` - Get user profile
+- `PUT /api/auth/profile` - Update user profile
+
+### Books
+- `GET /api/books` - Get all books (with pagination)
+- `POST /api/books` - Create new book
+- `GET /api/books/:id` - Get book by ID
+- `PUT /api/books/:id` - Update book
+- `DELETE /api/books/:id` - Delete book
+
+### Categories
+- `GET /api/categories` - Get all categories
+- `POST /api/categories` - Create new category
+- `GET /api/categories/:id` - Get category by ID
+- `PUT /api/categories/:id` - Update category
+- `DELETE /api/categories/:id` - Delete category
+
+## 🐛 Troubleshooting
+
+### Database Connection Issues
+1. **Check MySQL Workbench connection:**
+   - Make sure MySQL server is running
+   - Verify your connection in MySQL Workbench
+
+2. **Check .env file:**
+   - Verify username and password
+   - Check database name matches
+   - Ensure port is correct (usually 3306)
+
+3. **Test connection:**
+   ```bash
+   node test-connection.js
+   ```
+
+### Common Issues:
+- **Wrong password:** Update `DB_PASSWORD` in `.env`
+- **Wrong username:** Update `DB_USER` in `.env`
+- **Database doesn't exist:** Run `setup-mysql-workbench.sql`
+- **Port issues:** Make sure MySQL is running on port 3306
+
+### Port Already in Use
+```bash
+# Kill process on port 5000
+lsof -ti:5000 | xargs kill -9
+
+# Kill process on port 3000
+lsof -ti:3000 | xargs kill -9
+```
 
 ## 📊 Database Schema
 
-The application automatically creates the following tables:
+The application uses these tables (created by `setup-mysql-workbench.sql`):
 
 ### Users Table
 ```sql
@@ -206,125 +239,28 @@ CREATE TABLE books (
 );
 ```
 
-## 🛠️ Available Scripts
-
-### Root Directory
-```bash
-npm run dev          # Start both frontend and backend
-npm run frontend     # Start only frontend
-npm run backend      # Start only backend
-```
-
-### Frontend
-```bash
-npm start           # Start development server
-npm run build       # Build for production
-npm run eject       # Eject from Create React App
-```
-
-### Backend
-```bash
-npm start           # Start production server
-npm run dev         # Start development server with nodemon
-```
-
-## 🔌 API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/auth/profile` - Get user profile
-- `PUT /api/auth/profile` - Update user profile
-
-### Books
-- `GET /api/books` - Get all books (with pagination)
-- `POST /api/books` - Create new book
-- `GET /api/books/:id` - Get book by ID
-- `PUT /api/books/:id` - Update book
-- `DELETE /api/books/:id` - Delete book
-- `PUT /api/books/:id/stock` - Update book stock
-- `GET /api/books/low-stock` - Get low stock books
-
-### Categories
-- `GET /api/categories` - Get all categories
-- `GET /api/categories/with-count` - Get categories with book count
-- `POST /api/categories` - Create new category
-- `GET /api/categories/:id` - Get category by ID
-- `PUT /api/categories/:id` - Update category
-- `DELETE /api/categories/:id` - Delete category
-
-## 🎨 UI Features
-
-- **Modern Design** - Clean, professional interface
-- **Colorful Themes** - Dynamic color schemes
-- **Responsive Layout** - Works on desktop, tablet, and mobile
-- **Interactive Elements** - Hover effects and animations
-- **Photo Upload** - Drag-and-drop image upload
-- **Search & Filter** - Advanced filtering capabilities
-- **Real-time Updates** - Live data updates
-
-## 🔒 Security Features
-
-- **JWT Authentication** - Secure token-based auth
-- **Password Hashing** - Bcrypt password encryption
-- **Rate Limiting** - API request throttling
-- **Input Validation** - Server-side validation
-- **CORS Protection** - Cross-origin request security
-- **Helmet Security** - HTTP header protection
-
-## 🚀 Deployment
-
-### Frontend (React)
-```bash
-cd frontend
-npm run build
-# Deploy the 'build' folder to your hosting service
-```
-
-### Backend (Node.js)
-```bash
-cd backend
-npm start
-# Deploy to your Node.js hosting service
-```
-
-### Environment Setup for Production
-1. Set `NODE_ENV=production`
-2. Use strong JWT secret
-3. Configure production database
-4. Set up proper logging
-5. Configure CORS for your domain
-
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
 If you encounter any issues:
 
-1. Check the console logs for errors
-2. Verify database connection
-3. Ensure all environment variables are set
-4. Check if all dependencies are installed
+1. Check the troubleshooting section above
+2. Run `node test-connection.js` to test your database connection
+3. Verify your MySQL Workbench connection
+4. Check your `.env` file configuration
+5. Open an issue with detailed error information
 
-## 🎯 Next Steps
+## 📖 Detailed Setup Guide
 
-- [ ] Add user management features
-- [ ] Implement advanced reporting
-- [ ] Add bulk import/export
-- [ ] Create mobile app
-- [ ] Add email notifications
-- [ ] Implement backup system
-
----
-
-**Happy Coding! 🚀** 
+For more detailed instructions, see [MYSQL_WORKBENCH_SETUP.md](MYSQL_WORKBENCH_SETUP.md) 

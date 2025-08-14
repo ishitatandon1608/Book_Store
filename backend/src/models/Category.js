@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+const { executeQuery, executeQueryWithRows } = require('../config/database');
 const logger = require('../config/logger');
 
 class Category {
@@ -11,7 +11,7 @@ class Category {
         VALUES (?, ?, NOW(), NOW())
       `;
 
-      const [result] = await pool.execute(query, [name, description]);
+      const result = await executeQuery(query, [name, description || null]);
 
       logger.info('Category created successfully', { categoryId: result.insertId, name });
 
@@ -25,52 +25,10 @@ class Category {
   static async findById(id) {
     try {
       const query = 'SELECT * FROM categories WHERE id = ?';
-      const [rows] = await pool.execute(query, [id]);
-
+      const rows = await executeQueryWithRows(query, [id]);
       return rows[0] || null;
     } catch (error) {
       logger.error('Error finding category by ID', { error: error.message, id });
-      throw error;
-    }
-  }
-
-  static async getAll(page = 1, limit = 10, search = '') {
-    try {
-      const offset = (page - 1) * limit;
-      let query = `
-        SELECT * FROM categories 
-        WHERE 1=1
-      `;
-      const params = [];
-
-      if (search) {
-        query += ` AND (name LIKE ? OR description LIKE ?)`;
-        params.push(`%${search}%`, `%${search}%`);
-      }
-
-      query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
-
-      const [rows] = await pool.execute(query, params);
-
-      // Get total count
-      let countQuery = 'SELECT COUNT(*) as total FROM categories WHERE 1=1';
-      if (search) {
-        countQuery += ` AND (name LIKE ? OR description LIKE ?)`;
-      }
-      const [countResult] = await pool.execute(countQuery, search ? [`%${search}%`, `%${search}%`] : []);
-
-      return {
-        categories: rows,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: countResult[0].total,
-          totalPages: Math.ceil(countResult[0].total / limit)
-        }
-      };
-    } catch (error) {
-      logger.error('Error getting all categories', { error: error.message });
       throw error;
     }
   }
@@ -85,7 +43,7 @@ class Category {
         WHERE id = ?
       `;
 
-      const [result] = await pool.execute(query, [name, description, id]);
+      const result = await executeQuery(query, [name, description || null, id]);
 
       if (result.affectedRows === 0) {
         throw new Error('Category not found');
@@ -103,14 +61,15 @@ class Category {
   static async delete(id) {
     try {
       // Check if category has books
-      const [books] = await pool.execute('SELECT COUNT(*) as count FROM books WHERE category_id = ?', [id]);
+      const booksQuery = 'SELECT COUNT(*) as count FROM books WHERE category_id = ?';
+      const booksResult = await executeQueryWithRows(booksQuery, [id]);
 
-      if (books[0].count > 0) {
-        throw new Error('Cannot delete category with associated books');
+      if (booksResult[0].count > 0) {
+        throw new Error('Cannot delete category with existing books');
       }
 
       const query = 'DELETE FROM categories WHERE id = ?';
-      const [result] = await pool.execute(query, [id]);
+      const result = await executeQuery(query, [id]);
 
       if (result.affectedRows === 0) {
         throw new Error('Category not found');
@@ -125,29 +84,73 @@ class Category {
     }
   }
 
-  static async getWithCount() {
+  static async getAll(page = 1, limit = 10, search = '') {
     try {
-      const query = `
-        SELECT c.*, COUNT(b.id) as book_count
-        FROM categories c
-        LEFT JOIN books b ON c.id = b.category_id
-        GROUP BY c.id
-        ORDER BY c.created_at DESC
-      `;
+      const offset = (page - 1) * limit;
+      let query = 'SELECT * FROM categories';
+      let countQuery = 'SELECT COUNT(*) as total FROM categories';
+      let params = [];
+      let countParams = [];
 
-      const [rows] = await pool.execute(query);
+      if (search) {
+        query += ' WHERE name LIKE ? OR description LIKE ?';
+        countQuery += ' WHERE name LIKE ? OR description LIKE ?';
+        const searchParam = `%${search}%`;
+        params = [searchParam, searchParam];
+        countParams = [searchParam, searchParam];
+      }
+
+      query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      params.push(limit, offset);
+
+      const rows = await executeQueryWithRows(query, params);
+      const countResult = await executeQueryWithRows(countQuery, countParams);
 
       return {
         categories: rows,
         pagination: {
-          page: 1,
-          limit: rows.length,
-          total: rows.length,
-          totalPages: 1
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: countResult[0].total,
+          totalPages: Math.ceil(countResult[0].total / limit)
         }
       };
     } catch (error) {
-      logger.error('Error getting categories with count', { error: error.message });
+      logger.error('Error getting all categories', { error: error.message });
+      throw error;
+    }
+  }
+
+  static async getAllSimple() {
+    try {
+      const query = 'SELECT id, name FROM categories ORDER BY name ASC';
+      const rows = await executeQueryWithRows(query);
+      return rows;
+    } catch (error) {
+      logger.error('Error getting simple categories', { error: error.message });
+      throw error;
+    }
+  }
+
+  static async getWithBookCount() {
+    try {
+      const query = `
+        SELECT 
+          c.id, 
+          c.name, 
+          c.description, 
+          c.created_at, 
+          c.updated_at,
+          COUNT(b.id) as book_count
+        FROM categories c
+        LEFT JOIN books b ON c.id = b.category_id
+        GROUP BY c.id
+        ORDER BY c.name ASC
+      `;
+      const rows = await executeQueryWithRows(query);
+      return rows;
+    } catch (error) {
+      logger.error('Error getting categories with book count', { error: error.message });
       throw error;
     }
   }

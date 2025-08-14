@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+const { executeQuery, executeQueryWithRows } = require('../config/database');
 const logger = require('../config/logger');
 
 class Book {
@@ -11,7 +11,7 @@ class Book {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
       `;
 
-      const [result] = await pool.execute(query, [
+      const result = await executeQuery(query, [
         title, author, isbn, price, quantity, category_id, description, image_url || null
       ]);
 
@@ -32,68 +32,10 @@ class Book {
         LEFT JOIN categories c ON b.category_id = c.id 
         WHERE b.id = ?
       `;
-      const [rows] = await pool.execute(query, [id]);
-
+      const rows = await executeQueryWithRows(query, [id]);
       return rows[0] || null;
     } catch (error) {
       logger.error('Error finding book by ID', { error: error.message, id });
-      throw error;
-    }
-  }
-
-  static async getAll(page = 1, limit = 10, search = '', category_id = null) {
-    try {
-      const offset = (page - 1) * limit;
-      let query = `
-        SELECT b.*, c.name as category_name 
-        FROM books b 
-        LEFT JOIN categories c ON b.category_id = c.id 
-        WHERE 1=1
-      `;
-      const params = [];
-
-      if (search) {
-        query += ` AND (b.title LIKE ? OR b.author LIKE ? OR b.isbn LIKE ?)`;
-        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-      }
-
-      if (category_id) {
-        query += ` AND b.category_id = ?`;
-        params.push(category_id);
-      }
-
-      query += ` ORDER BY b.created_at DESC LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
-
-      const [rows] = await pool.execute(query, params);
-
-      // Get total count
-      let countQuery = 'SELECT COUNT(*) as total FROM books b WHERE 1=1';
-      const countParams = [];
-
-      if (search) {
-        countQuery += ` AND (b.title LIKE ? OR b.author LIKE ? OR b.isbn LIKE ?)`;
-        countParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
-      }
-
-      if (category_id) {
-        countQuery += ` AND b.category_id = ?`;
-        countParams.push(category_id);
-      }
-
-      const [countResult] = await pool.execute(countQuery, countParams);
-
-      return {
-        books: rows,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: countResult[0].total,
-          totalPages: Math.ceil(countResult[0].total / limit)
-        }
-      };
-    } catch (error) {
-      logger.error('Error getting all books', { error: error.message });
       throw error;
     }
   }
@@ -109,7 +51,7 @@ class Book {
         WHERE id = ?
       `;
 
-      const [result] = await pool.execute(query, [
+      const result = await executeQuery(query, [
         title, author, isbn, price, quantity, category_id, description, image_url || null, id
       ]);
 
@@ -129,7 +71,7 @@ class Book {
   static async delete(id) {
     try {
       const query = 'DELETE FROM books WHERE id = ?';
-      const [result] = await pool.execute(query, [id]);
+      const result = await executeQuery(query, [id]);
 
       if (result.affectedRows === 0) {
         throw new Error('Book not found');
@@ -144,10 +86,80 @@ class Book {
     }
   }
 
+  static async getAll(page = 1, limit = 10, search = '', category_id = null) {
+    try {
+      const offset = (page - 1) * limit;
+      let query = `
+        SELECT b.*, c.name as category_name 
+        FROM books b 
+        LEFT JOIN categories c ON b.category_id = c.id
+      `;
+      let countQuery = 'SELECT COUNT(*) as total FROM books b';
+      let whereConditions = [];
+      let params = [];
+      let countParams = [];
+
+      if (search) {
+        whereConditions.push('(b.title LIKE ? OR b.author LIKE ? OR b.isbn LIKE ?)');
+        const searchParam = `%${search}%`;
+        params.push(searchParam, searchParam, searchParam);
+        countParams.push(searchParam, searchParam, searchParam);
+      }
+
+      if (category_id) {
+        whereConditions.push('b.category_id = ?');
+        params.push(category_id);
+        countParams.push(category_id);
+      }
+
+      if (whereConditions.length > 0) {
+        const whereClause = ' WHERE ' + whereConditions.join(' AND ');
+        query += whereClause;
+        countQuery += whereClause;
+      }
+
+      query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
+      params.push(limit, offset);
+
+      const rows = await executeQueryWithRows(query, params);
+      const countResult = await executeQueryWithRows(countQuery, countParams);
+
+      return {
+        books: rows,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: countResult[0].total,
+          totalPages: Math.ceil(countResult[0].total / limit)
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting all books', { error: error.message });
+      throw error;
+    }
+  }
+
+  static async getLowStock(threshold = 10) {
+    try {
+      const query = `
+        SELECT b.*, c.name as category_name 
+        FROM books b 
+        LEFT JOIN categories c ON b.category_id = c.id 
+        WHERE b.quantity <= ? 
+        ORDER BY b.quantity ASC
+      `;
+      const rows = await executeQueryWithRows(query, [threshold]);
+      return rows;
+    } catch (error) {
+      logger.error('Error getting low stock books', { error: error.message });
+      throw error;
+    }
+  }
+
   static async updateStock(id, quantity) {
     try {
       const query = 'UPDATE books SET quantity = ?, updated_at = NOW() WHERE id = ?';
-      const [result] = await pool.execute(query, [quantity, id]);
+      const result = await executeQuery(query, [quantity, id]);
 
       if (result.affectedRows === 0) {
         throw new Error('Book not found');
@@ -162,21 +174,28 @@ class Book {
     }
   }
 
-  static async getLowStock(threshold = 10) {
+  static async getStats() {
     try {
-      const query = `
-        SELECT b.*, c.name as category_name 
-        FROM books b 
-        LEFT JOIN categories c ON b.category_id = c.id 
-        WHERE b.quantity <= ? 
-        ORDER BY b.quantity ASC
-      `;
+      const totalBooksQuery = 'SELECT COUNT(*) as total FROM books';
+      const totalCategoriesQuery = 'SELECT COUNT(*) as total FROM categories';
+      const lowStockQuery = 'SELECT COUNT(*) as total FROM books WHERE quantity <= 10';
+      const totalValueQuery = 'SELECT SUM(price * quantity) as total FROM books';
 
-      const [rows] = await pool.execute(query, [threshold]);
+      const [totalBooks, totalCategories, lowStock, totalValue] = await Promise.all([
+        executeQueryWithRows(totalBooksQuery),
+        executeQueryWithRows(totalCategoriesQuery),
+        executeQueryWithRows(lowStockQuery),
+        executeQueryWithRows(totalValueQuery)
+      ]);
 
-      return rows;
+      return {
+        totalBooks: totalBooks[0].total,
+        totalCategories: totalCategories[0].total,
+        lowStockBooks: lowStock[0].total,
+        totalValue: totalValue[0].total || 0
+      };
     } catch (error) {
-      logger.error('Error getting low stock books', { error: error.message });
+      logger.error('Error getting book stats', { error: error.message });
       throw error;
     }
   }
@@ -190,9 +209,7 @@ class Book {
         WHERE b.category_id = ?
         ORDER BY b.title ASC
       `;
-
-      const [rows] = await pool.execute(query, [categoryId]);
-
+      const rows = await executeQueryWithRows(query, [categoryId]);
       return rows;
     } catch (error) {
       logger.error('Error getting books by category', { error: error.message, categoryId });
