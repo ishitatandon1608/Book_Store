@@ -101,7 +101,7 @@ class Category {
       }
 
       query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-      params.push(limit, offset);
+      params.push(parseInt(limit), parseInt(offset));
 
       const rows = await executeQueryWithRows(query, params);
       const countResult = await executeQueryWithRows(countQuery, countParams);

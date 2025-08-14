@@ -96,7 +96,7 @@ class User {
         ORDER BY created_at DESC 
         LIMIT ? OFFSET ?
       `;
-      const rows = await executeQueryWithRows(query, [limit, offset]);
+      const rows = await executeQueryWithRows(query, [parseInt(limit), parseInt(offset)]);
 
       // Get total count
       const countResult = await executeQueryWithRows('SELECT COUNT(*) as total FROM users');
@@ -113,6 +113,16 @@ class User {
     } catch (error) {
       logger.error('Error getting all users', { error: error.message });
       throw error;
+    }
+  }
+
+  static async verifyPassword(password, hashedPassword) {
+    try {
+      const bcrypt = require('bcryptjs');
+      return await bcrypt.compare(password, hashedPassword);
+    } catch (error) {
+      logger.error('Error verifying password', { error: error.message });
+      return false;
     }
   }
 }
