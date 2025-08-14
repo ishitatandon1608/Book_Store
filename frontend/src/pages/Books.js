@@ -64,38 +64,47 @@ const Books = () => {
     }
   });
 
-  const updateBookMutation = useMutation(booksAPI.update, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('booksPage');
-      toast.success('Book updated successfully!');
-      handleCloseModals();
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update book');
+  const updateBookMutation = useMutation(
+    ({ id, data }) => booksAPI.update(id, data),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('booksPage');
+        toast.success('Book updated successfully!');
+        handleCloseModals();
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to update book');
+      }
     }
-  });
+  );
 
-  const deleteBookMutation = useMutation(booksAPI.delete, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('booksPage');
-      toast.success('Book deleted successfully!');
-      handleCloseModals();
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to delete book');
+  const deleteBookMutation = useMutation(
+    (id) => booksAPI.delete(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('booksPage');
+        toast.success('Book deleted successfully!');
+        handleCloseModals();
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to delete book');
+      }
     }
-  });
+  );
 
-  const updateStockMutation = useMutation(booksAPI.updateStock, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('booksPage');
-      toast.success('Stock updated successfully!');
-      handleCloseModals();
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update stock');
+  const updateStockMutation = useMutation(
+    ({ id, quantity }) => booksAPI.updateStock(id, quantity),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('booksPage');
+        toast.success('Stock updated successfully!');
+        handleCloseModals();
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to update stock');
+      }
     }
-  });
+  );
 
   // Handlers
   const handleInputChange = (e) => {
@@ -181,12 +190,10 @@ const Books = () => {
       category_id: parseInt(formData.category_id)
     };
 
-    console.log('Submitting book data:', bookData);
-
     if (showAddModal) {
       createBookMutation.mutate(bookData);
     } else if (showEditModal) {
-      updateBookMutation.mutate({ id: selectedBook.id, ...bookData });
+      updateBookMutation.mutate({ id: selectedBook.id, data: bookData });
     }
   };
 

@@ -3,9 +3,6 @@ const logger = require('../config/logger');
 
 const createBook = async (req, res) => {
   try {
-    console.log('createBook received data:', req.body);
-    console.log('Image URL length:', req.body.image_url ? req.body.image_url.length : 'No image');
-
     const bookData = req.body;
     const book = await Book.create(bookData);
 
@@ -17,7 +14,6 @@ const createBook = async (req, res) => {
       data: { book }
     });
   } catch (error) {
-    console.error('createBook error:', error.message);
     logger.error('Create book error', { error: error.message, userId: req.user.id });
     res.status(500).json({
       success: false,
@@ -30,18 +26,13 @@ const getAllBooks = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '', category_id } = req.query;
 
-    console.log('getAllBooks called with params:', { page, limit, search, category_id });
-
     const result = await Book.getAll(page, limit, search, category_id);
-
-    console.log('getAllBooks result:', { booksCount: result.books?.length, pagination: result.pagination });
 
     res.json({
       success: true,
       data: result
     });
   } catch (error) {
-    console.error('getAllBooks error:', error.message);
     logger.error('Get all books error', { error: error.message });
     res.status(500).json({
       success: false,
