@@ -26,7 +26,7 @@ const getAllCategories = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '' } = req.query;
 
-    const result = await Category.getAll(parseInt(page), parseInt(limit), search);
+    const result = await Category.getAll(page, limit, search);
 
     res.json({
       success: true,
