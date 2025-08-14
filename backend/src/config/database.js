@@ -146,21 +146,8 @@ const executeQuery = async (query, params = []) => {
   try {
     connection = await createConnection();
 
-    // Ensure parameters are properly formatted
-    const formattedParams = params.map(param => {
-      if (param === null || param === undefined) {
-        return null;
-      }
-      if (typeof param === 'number') {
-        return param;
-      }
-      if (typeof param === 'string') {
-        return param;
-      }
-      return param;
-    });
-
-    const [results] = await connection.execute(query, formattedParams);
+    // Use query instead of execute for better compatibility
+    const [results] = await connection.query(query, params);
     return results;
   } catch (error) {
     logger.error('Database query error:', { error: error.message, query });
@@ -178,25 +165,11 @@ const executeQueryWithRows = async (query, params = []) => {
   try {
     connection = await createConnection();
 
-    // Ensure parameters are properly formatted
-    const formattedParams = params.map(param => {
-      if (param === null || param === undefined) {
-        return null;
-      }
-      if (typeof param === 'number') {
-        return param;
-      }
-      if (typeof param === 'string') {
-        return param;
-      }
-      return param;
-    });
-
     console.log('executeQueryWithRows - Query:', query);
-    console.log('executeQueryWithRows - Original params:', params);
-    console.log('executeQueryWithRows - Formatted params:', formattedParams);
+    console.log('executeQueryWithRows - Params:', params);
 
-    const [rows] = await connection.execute(query, formattedParams);
+    // Use query instead of execute for better compatibility with LIMIT/OFFSET
+    const [rows] = await connection.query(query, params);
     return rows;
   } catch (error) {
     logger.error('Database query error:', { error: error.message, query });
