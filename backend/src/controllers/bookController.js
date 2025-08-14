@@ -3,6 +3,8 @@ const logger = require('../config/logger');
 
 const createBook = async (req, res) => {
   try {
+    console.log('createBook received data:', req.body);
+
     const bookData = req.body;
     const book = await Book.create(bookData);
 
@@ -14,6 +16,7 @@ const createBook = async (req, res) => {
       data: { book }
     });
   } catch (error) {
+    console.error('createBook error:', error.message);
     logger.error('Create book error', { error: error.message, userId: req.user.id });
     res.status(500).json({
       success: false,

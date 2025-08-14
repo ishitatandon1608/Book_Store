@@ -56,8 +56,10 @@ const validateBook = [
     .isInt({ min: 0 })
     .withMessage('Quantity must be a non-negative integer'),
   body('category_id')
+    .notEmpty()
+    .withMessage('Category is required')
     .isInt({ min: 1 })
-    .withMessage('Category ID must be a positive integer'),
+    .withMessage('Please select a valid category'),
   handleValidationErrors
 ];
 

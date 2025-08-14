@@ -123,12 +123,21 @@ const Books = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (!formData.title || !formData.author || !formData.isbn || !formData.price || !formData.quantity || !formData.category_id) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     const bookData = {
       ...formData,
       price: parseFloat(formData.price),
       quantity: parseInt(formData.quantity),
       category_id: parseInt(formData.category_id)
     };
+
+    console.log('Submitting book data:', bookData);
 
     if (showAddModal) {
       createBookMutation.mutate(bookData);
