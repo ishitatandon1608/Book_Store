@@ -86,9 +86,9 @@ class Category {
 
   static async getAll(page = 1, limit = 10, search = '') {
     try {
-      // Ensure parameters are properly converted to numbers
-      const pageNum = parseInt(page) || 1;
-      const limitNum = parseInt(limit) || 10;
+      // Handle undefined/null parameters
+      const pageNum = page ? parseInt(page) || 1 : 1;
+      const limitNum = limit ? parseInt(limit) || 10 : 10;
       const offset = (pageNum - 1) * limitNum;
 
       let query = 'SELECT * FROM categories';

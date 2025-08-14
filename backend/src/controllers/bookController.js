@@ -26,13 +26,18 @@ const getAllBooks = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '', category_id } = req.query;
 
+    console.log('getAllBooks called with:', { page, limit, search, category_id });
+
     const result = await Book.getAll(page, limit, search, category_id);
+
+    console.log('getAllBooks result:', result);
 
     res.json({
       success: true,
       data: result
     });
   } catch (error) {
+    console.error('getAllBooks error:', error);
     logger.error('Get all books error', { error: error.message });
     res.status(500).json({
       success: false,
